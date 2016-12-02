@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/silkyland/crflood/issues"
   },
-  "homepage": "https://github.com/silkyland/crflood#readme"
+  "homepage": "https://github.com/silkyland/crflood#readme",
+  "dependencies": {
+    "bower": "^1.8.0"
+  }
 }
