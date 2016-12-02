@@ -1,0 +1,20 @@
+{
+  "name": "crflood",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "bower install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silkyland/crflood.git"
+  },
+  "author": "Satawat Orachunwekhin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/silkyland/crflood/issues"
+  },
+  "homepage": "https://github.com/silkyland/crflood#readme"
+}
