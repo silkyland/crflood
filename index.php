@@ -13,6 +13,8 @@
     <!-- font awesome -->
     <link href="bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 
+    <link href="bower_components/highcharts/css/highcharts.css" rel="stylesheet">
+
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -132,10 +134,10 @@ $obj = json_decode($json);
     </div>
     <div class="row">
         <div class="col-md-6">
-            <canvas id="myChartWarningLevel"></canvas>
+            <div id="myChartWarningLevel"></div>
         </div>
         <div class="col-md-6">
-            <canvas id="myChartCriticalLevel"></canvas>
+            <div id="myChartCriticalLevel"></div>
         </div>
     </div>
 </div>
@@ -145,150 +147,235 @@ $obj = json_decode($json);
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
-<script src="bower_components/chart.js/dist/Chart.min.js"></script>
+<script src="bower_components/highcharts/js/highcharts.js"></script>
+<script src="bower_components/highcharts/js/highcharts-more.js"></script>
+<script src="bower_components/highcharts/js/modules/exporting.js"></script>
+
+<div id="container" style="min-width: 310px; max-width: 400px; height: 300px; margin: 0 auto"></div>
 
 <script>
-    var count = 1;
-    var runDateTime;
-    var ctx = document.getElementById("myChartWarningLevel");
-    var myChartWarningLevel = new Chart.Line(ctx, {
-        type: 'bar',
-        data: {
-            labels: [
-                <?php echo
-                '"' . date('H:i:s') . '",'; ?>],
-            datasets: [{
-                label: 'ระดับเตือนภัย',
-                data: [
-                    <?php echo
-                    $obj->warning_level[0] . ',';?>],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255,99,132,1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            }
-        }
-    });
 
-    var ctx1 = document.getElementById("myChartCriticalLevel");
-    var myChartCriticalLevel = new Chart.Line(ctx1, {
-        type: 'bar',
-        data: {
-            labels: [
-                <?php echo
-                '"' . date('H:i:s') . '",'; ?>],
-            datasets: [{
-                label: 'ระดับวิกฤต',
-                data: [
-                    <?php echo
-                    $obj->critical_level[0] . ',';?>],
-                backgroundColor: [
-                    'rgba(75, 192, 192, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
+    $(function () {
+
+        Highcharts.chart('myChartWarningLevel', {
+
+                chart: {
+                    type: 'gauge',
+                    plotBackgroundColor: null,
+                    plotBackgroundImage: null,
+                    plotBorderWidth: 0,
+                    plotShadow: false
+                },
+
+                title: {
+                    text: 'ระดับเตือนภัย'
+                },
+
+                pane: {
+                    startAngle: -150,
+                    endAngle: 150,
+                    background: [{
+                        backgroundColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#FFF'],
+                                [1, '#333']
+                            ]
+                        },
+                        borderWidth: 0,
+                        outerRadius: '109%'
+                    }, {
+                        backgroundColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#333'],
+                                [1, '#FFF']
+                            ]
+                        },
+                        borderWidth: 1,
+                        outerRadius: '107%'
+                    }, {
+                        // default background
+                    }, {
+                        backgroundColor: '#DDD',
+                        borderWidth: 0,
+                        outerRadius: '105%',
+                        innerRadius: '103%'
+                    }]
+                },
+
+                // the value axis
+                yAxis: {
+                    min: 0,
+                    max: 1000,
+
+                    minorTickInterval: 'auto',
+                    minorTickWidth: 1,
+                    minorTickLength: 10,
+                    minorTickPosition: 'inside',
+                    minorTickColor: '#666',
+
+                    tickPixelInterval: 30,
+                    tickWidth: 2,
+                    tickPosition: 'inside',
+                    tickLength: 10,
+                    tickColor: '#666',
+                    labels: {
+                        step: 2,
+                        rotation: 'auto'
+                    },
+                    title: {
+                        text: 'หน่วย'
+                    },
+                    plotBands: [{
+                        from: 0,
+                        to: 600,
+                        color: '#55BF3B' // green
+                    }, {
+                        from: 600,
+                        to: 700,
+                        color: '#DDDF0D' // yellow
+                    }, {
+                        from: 700,
+                        to: 1000,
+                        color: '#DF5353' // red
+                    }]
+                },
+
+                series: [{
+                    name: 'ระดับ',
+                    data: [<?php echo $obj->warning_level[0] ?>],
+                    tooltip: {
+                        valueSuffix: ' หน่วย'
                     }
                 }]
-            }
-        }
+
+            },
+            // Add some life
+            function (chart) {
+                if (!chart.renderer.forExport) {
+                    setInterval(function () {
+                        var point = chart.series[0].points[0],
+                            newVal;
+
+                        newVal = Math.round(<?php echo $obj->warning_level[0] ?>);
+                        point.update(newVal);
+
+                    }, 3000);
+                }
+            });
     });
 
     $(function () {
-        var nowDateTime = new Date("<?php echo date("m/d/Y H:i:s") ?>");
-        var d = nowDateTime.getTime();
-        var mkHour, mkMinute, mkSecond;
-        setInterval(function () {
-            d = parseInt(d) + 1000;
-            var nowDateTime = new Date(d);
-            mkHour = new String(nowDateTime.getHours());
-            if (mkHour.length == 1) {
-                mkHour = "0" + mkHour;
-            }
-            mkMinute = new String(nowDateTime.getMinutes());
-            if (mkMinute.length == 1) {
-                mkMinute = "0" + mkMinute;
-            }
-            mkSecond = new String(nowDateTime.getSeconds());
-            if (mkSecond.length == 1) {
-                mkSecond = "0" + mkSecond;
-            }
-            runDateTime = mkHour + ":" + mkMinute + ":" + mkSecond;
-        }, 1000);
 
+        Highcharts.chart('myChartCriticalLevel', {
+
+                chart: {
+                    type: 'gauge',
+                    plotBackgroundColor: null,
+                    plotBackgroundImage: null,
+                    plotBorderWidth: 0,
+                    plotShadow: false
+                },
+
+                title: {
+                    text: 'ระดับวิกฤต'
+                },
+
+                pane: {
+                    startAngle: -150,
+                    endAngle: 150,
+                    background: [{
+                        backgroundColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#FFF'],
+                                [1, '#333']
+                            ]
+                        },
+                        borderWidth: 0,
+                        outerRadius: '109%'
+                    }, {
+                        backgroundColor: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#333'],
+                                [1, '#FFF']
+                            ]
+                        },
+                        borderWidth: 1,
+                        outerRadius: '107%'
+                    }, {
+                        // default background
+                    }, {
+                        backgroundColor: '#DDD',
+                        borderWidth: 0,
+                        outerRadius: '105%',
+                        innerRadius: '103%'
+                    }]
+                },
+
+                // the value axis
+                yAxis: {
+                    min: 0,
+                    max: 1000,
+
+                    minorTickInterval: 'auto',
+                    minorTickWidth: 1,
+                    minorTickLength: 10,
+                    minorTickPosition: 'inside',
+                    minorTickColor: '#666',
+
+                    tickPixelInterval: 30,
+                    tickWidth: 2,
+                    tickPosition: 'inside',
+                    tickLength: 10,
+                    tickColor: '#666',
+                    labels: {
+                        step: 2,
+                        rotation: 'auto'
+                    },
+                    title: {
+                        text: 'หน่วย'
+                    },
+                    plotBands: [{
+                        from: 0,
+                        to: 120,
+                        color: '#55BF3B' // green
+                    }, {
+                        from: 120,
+                        to: 160,
+                        color: '#DDDF0D' // yellow
+                    }, {
+                        from: 160,
+                        to: 200,
+                        color: '#DF5353' // red
+                    }]
+                },
+
+                series: [{
+                    name: 'ระดับ',
+                    data: [<?php echo $obj->warning_level[0] ?>],
+                    tooltip: {
+                        valueSuffix: ' หน่วย'
+                    }
+                }]
+
+            },
+            // Add some life
+            function (chart) {
+                if (!chart.renderer.forExport) {
+                    setInterval(function () {
+                        var point = chart.series[0].points[0],
+                            newVal;
+
+                        newVal = Math.round(<?php echo $obj->critical_level[0] ?>);
+                        point.update(newVal);
+
+                    }, 3000);
+                }
+            });
     });
-
-    $(function () {
-        updateDataChart();
-    });
-
-    function updateDataChart() {
-        setTimeout(function () {
-            if (count < 6) {
-                myChartWarningLevel.data.datasets[0].data[count] = <?php echo $obj->warning_level[0] ?>;
-                myChartWarningLevel.data.labels[count] = runDateTime;
-                myChartWarningLevel.update();
-
-                myChartCriticalLevel.data.datasets[0].data[count] = <?php echo $obj->critical_level[0] ?>;
-                myChartCriticalLevel.data.labels[count] = runDateTime;
-                myChartCriticalLevel.update();
-
-                count++;
-                updateDataChart();
-            } else {
-                myChartWarningLevel.data.datasets[0].data[0] = myChartWarningLevel.data.datasets[0].data[1];
-                myChartWarningLevel.data.datasets[0].data[1] = myChartWarningLevel.data.datasets[0].data[2];
-                myChartWarningLevel.data.datasets[0].data[2] = myChartWarningLevel.data.datasets[0].data[3];
-                myChartWarningLevel.data.datasets[0].data[3] = myChartWarningLevel.data.datasets[0].data[4];
-                myChartWarningLevel.data.datasets[0].data[4] = myChartWarningLevel.data.datasets[0].data[5];
-                myChartWarningLevel.data.datasets[0].data[5] = <?php echo $obj->critical_level[0] ?>;
-                myChartWarningLevel.data.labels[0] = myChartWarningLevel.data.labels[1];
-                myChartWarningLevel.data.labels[1] = myChartWarningLevel.data.labels[2];
-                myChartWarningLevel.data.labels[2] = myChartWarningLevel.data.labels[3];
-                myChartWarningLevel.data.labels[3] = myChartWarningLevel.data.labels[4];
-                myChartWarningLevel.data.labels[4] = myChartWarningLevel.data.labels[5];
-                myChartWarningLevel.data.labels[5] = runDateTime;
-
-                myChartCriticalLevel.data.datasets[0].data[0] = myChartCriticalLevel.data.datasets[0].data[1];
-                myChartCriticalLevel.data.datasets[0].data[1] = myChartCriticalLevel.data.datasets[0].data[2];
-                myChartCriticalLevel.data.datasets[0].data[2] = myChartCriticalLevel.data.datasets[0].data[3];
-                myChartCriticalLevel.data.datasets[0].data[3] = myChartCriticalLevel.data.datasets[0].data[4];
-                myChartCriticalLevel.data.datasets[0].data[4] = myChartCriticalLevel.data.datasets[0].data[5];
-                myChartCriticalLevel.data.datasets[0].data[5] = <?php echo $obj->critical_level[0] ?>;
-                myChartCriticalLevel.data.labels[0] = myChartCriticalLevel.data.labels[1];
-                myChartCriticalLevel.data.labels[1] = myChartCriticalLevel.data.labels[2];
-                myChartCriticalLevel.data.labels[2] = myChartCriticalLevel.data.labels[3];
-                myChartCriticalLevel.data.labels[3] = myChartCriticalLevel.data.labels[4];
-                myChartCriticalLevel.data.labels[4] = myChartCriticalLevel.data.labels[5];
-                myChartCriticalLevel.data.labels[5] = runDateTime;
-
-                myChartWarningLevel.update();
-                myChartCriticalLevel.update();
-                updateDataChart();
-            }
-        }, 2000);
-    }
-    ;
 
 </script>
 </body>
